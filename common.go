@@ -5,6 +5,22 @@ import (
 	"reflect"
 )
 
+func Value(x interface{}) reflect.Value {
+	return reflect.ValueOf(x)
+}
+
+func Type(x interface{}) reflect.Type {
+	return reflect.ValueOf(x).Type()
+}
+
+func PtrElem(x reflect.Value) reflect.Value {
+
+	if x.Type().Kind() == reflect.Ptr {
+		return x.Elem()
+	}
+	return x
+}
+
 func PtrInt(x int) *int {
 	return &x
 }
@@ -25,11 +41,11 @@ func PtrBool(x bool) *bool {
 	return &x
 }
 
-func IsString(x interface{}) bool {
+func IsString(x reflect.Value) bool {
 
-	return reflect.ValueOf(x).Kind() == reflect.String
+	return x.Kind() == reflect.String
 }
 
-func IsInt(x interface{}) bool {
-	return reflect.ValueOf(x).Kind() == reflect.Int
+func IsInt(x reflect.Value) bool {
+	return x.Kind() == reflect.Int
 }

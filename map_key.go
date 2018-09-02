@@ -2,52 +2,82 @@ package util
 
 import (
 	"reflect"
+	"sort"
+	"time"
 )
 
+func MapStringIntSort(mapStringInt map[string]int) []string {
 
+	keys := MapStringKeys(Value(mapStringInt))
+	sort.Slice(keys, func(a, b int) bool {
+		return mapStringInt[keys[a]] < mapStringInt[keys[b]]
+	})
+	return keys
+}
 
+func MapStringTimeSort(mapStringTime map[string]time.Time) []string {
 
-func HasKey(hash interface{}, targetKey interface{}) (bool) {
+	keys := MapStringKeys(Value(mapStringTime))
+	sort.Slice(keys, func(a, b int) bool {
+		return mapStringTime[keys[a]].Before(mapStringTime[keys[b]])
+	})
+	return keys
+}
 
-	switch reflect.TypeOf(hash).Kind() {
-	case reflect.Map:
-
-		switch reflect.TypeOf(hash).Key().Kind() {
-		case reflect.String:
-			if !IsString(targetKey) {
-				//return false, fmt.Errorf("type of hash key should be same type of targetKey")
-				return false
+func MapStringKeys(hash reflect.Value) []string {
+	var keys []string
+	keys = []string{}
+	if !hash.IsValid() {
+		return keys
+	}
+	hash = PtrElem(hash)
+	if hash.Type().Kind() == reflect.Map {
+		for _, value := range hash.MapKeys() {
+			if value.Type().Kind() == reflect.String {
+				keys = append(keys, value.Interface().(string))
 			}
-			return hasKeyString(hash.(map[string]interface{}), targetKey.(string))
-		case reflect.Int:
-			if !IsInt(targetKey) {
-				//return false, fmt.Errorf("type of hash key should be same type of targetKey")
-				return false
-			}
-			return hasKeyInt(hash.(map[int]interface{}), targetKey.(int))
 		}
-	default:
-		//return false, fmt.Errorf("hash should be map")
-		return false
+		sort.Slice(keys, func(a, b int) bool { return keys[a] < keys[b] })
 	}
-	return false
+	return keys
 }
 
-func hasKeyString(hash map[string]interface{}, key string) bool {
-
-	if _, exist := hash[key]; exist {
-		return true
+func MapIntKeys(hash reflect.Value) []int {
+	var keys []int
+	keys = []int{}
+	if !hash.IsValid() {
+		return keys
 	}
-	return false
+	hash = PtrElem(hash)
+	if hash.Type().Kind() == reflect.Map {
+		for _, value := range hash.MapKeys() {
+			if value.Type().Kind() == reflect.Int {
+				keys = append(keys, value.Interface().(int))
+			}
+		}
+		sort.Slice(keys, func(a, b int) bool { return keys[a] < keys[b] })
+	}
+	return keys
 }
 
-func hasKeyInt(hash map[int]interface{}, key int) bool {
+func MapTimeKeys(hash reflect.Value) []time.Time {
+	var keys []time.Time
+	keys = []time.Time{}
 
-	if _, exist := hash[key]; exist {
-		return true
+	if !hash.IsValid() {
+		return keys
 	}
-	return false
-	reflect.DeepEqual()
+	hash = PtrElem(hash)
+	if hash.Type().Kind() == reflect.Map {
+		for _, value := range hash.MapKeys() {
+			switch t := value.Interface().(type) {
+			case time.Time:
+				keys = append(keys, t)
+			default:
+
+			}
+		}
+		sort.Slice(keys, func(a, b int) bool { return keys[a].Before(keys[b]) })
+	}
+	return keys
 }
-
-
